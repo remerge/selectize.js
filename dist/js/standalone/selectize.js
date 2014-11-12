@@ -1350,7 +1350,10 @@
 				'dropdown_open'  : 'onDropdownOpen',
 				'dropdown_close' : 'onDropdownClose',
 				'type'           : 'onType',
-				'load'           : 'onLoad'
+				'load'           : 'onLoad',
+				'focus'          : 'onFocus',
+				'blur'           : 'onBlur',
+				'option_active'  : 'onOptionActive'
 			};
 	
 			for (key in callbacks) {
@@ -1581,8 +1584,7 @@
 		 */
 		onFocus: function(e) {
 			var self = this;
-	
-			self.isFocused = true;
+			var wasFocused = self.isFocused;
 			if (self.isDisabled) {
 				self.blur();
 				e && e.preventDefault();
@@ -1590,6 +1592,8 @@
 			}
 	
 			if (self.ignoreFocus) return;
+			self.isFocused = true;
+	
 			if (self.settings.preload === 'focus') self.onSearchChange('');
 	
 			if (!self.$activeItems.length) {
@@ -1599,6 +1603,10 @@
 			}
 	
 			self.refreshState();
+	
+			if (!wasFocused) {
+				self.trigger('focus');
+			}
 		},
 	
 		/**
@@ -1609,6 +1617,7 @@
 		 */
 		onBlur: function(e) {
 			var self = this;
+			var wasFocused = self.isFocused;
 			self.isFocused = false;
 			if (self.ignoreFocus) return;
 	
@@ -1623,7 +1632,9 @@
 			if (self.settings.create && self.settings.createOnBlur) {
 				self.createItem(false);
 			}
-	
+			if(wasFocused) {
+				self.trigger('blur');
+			}
 			self.close();
 			self.setTextboxValue('');
 			self.setActiveItem(null);
@@ -1861,6 +1872,7 @@
 				}
 	
 			}
+			self.trigger('option_active', self.$activeOption.attr('data-value'));
 		},
 	
 		/**

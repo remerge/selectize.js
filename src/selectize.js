@@ -301,7 +301,10 @@ $.extend(Selectize.prototype, {
 			'dropdown_open'  : 'onDropdownOpen',
 			'dropdown_close' : 'onDropdownClose',
 			'type'           : 'onType',
-			'load'           : 'onLoad'
+			'load'           : 'onLoad',
+			'focus'          : 'onFocus',
+			'blur'           : 'onBlur',
+			'option_active'  : 'onOptionActive'
 		};
 
 		for (key in callbacks) {
@@ -532,8 +535,7 @@ $.extend(Selectize.prototype, {
 	 */
 	onFocus: function(e) {
 		var self = this;
-
-		self.isFocused = true;
+		var wasFocused = self.isFocused;
 		if (self.isDisabled) {
 			self.blur();
 			e && e.preventDefault();
@@ -541,6 +543,8 @@ $.extend(Selectize.prototype, {
 		}
 
 		if (self.ignoreFocus) return;
+		self.isFocused = true;
+
 		if (self.settings.preload === 'focus') self.onSearchChange('');
 
 		if (!self.$activeItems.length) {
@@ -550,6 +554,10 @@ $.extend(Selectize.prototype, {
 		}
 
 		self.refreshState();
+
+		if (!wasFocused) {
+			self.trigger('focus');
+		}
 	},
 
 	/**
@@ -560,6 +568,7 @@ $.extend(Selectize.prototype, {
 	 */
 	onBlur: function(e) {
 		var self = this;
+		var wasFocused = self.isFocused;
 		self.isFocused = false;
 		if (self.ignoreFocus) return;
 
@@ -574,7 +583,9 @@ $.extend(Selectize.prototype, {
 		if (self.settings.create && self.settings.createOnBlur) {
 			self.createItem(false);
 		}
-
+		if(wasFocused) {
+			self.trigger('blur');
+		}
 		self.close();
 		self.setTextboxValue('');
 		self.setActiveItem(null);
@@ -812,6 +823,7 @@ $.extend(Selectize.prototype, {
 			}
 
 		}
+		self.trigger('option_active', self.$activeOption.attr('data-value'));
 	},
 
 	/**
